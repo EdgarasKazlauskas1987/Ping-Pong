@@ -1,7 +1,3 @@
-# virtual-pong
+# Virtual Pong
 
-A Clojure app to ... well, that part is up to you.
-
-## Usage
-
-FIXME
+A classic Ping-Pong game developed in CLojure functional programming language.
