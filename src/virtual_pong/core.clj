@@ -1,5 +1,6 @@
 (ns virtual-pong.core
   (:gen-class)
+  (:import [java.awt.event KeyEvent])
   (:require [quil.core :as quil]))
 
 
@@ -51,6 +52,7 @@
 (quil/defsketch pong
                 :title "Virtual Pong"
                 :size [800 450]
+                :setup (fn [] (quil/smooth) (quil/no-stroke) (quil/frame-rate 60))
                 :draw (fn [] (draw))
                 :key-pressed key-pressed)
   
