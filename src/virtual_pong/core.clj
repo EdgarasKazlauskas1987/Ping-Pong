@@ -1,6 +1,7 @@
 (ns virtual-pong.core
   (:gen-class)
-  (:require [quil.core :as quil]))
+  (:require [quil.core :as quil])
+  (:require [clojure.core.async :as async]))
 
 
 (defn draw-rect-left [y]
@@ -17,11 +18,8 @@
 
 ;; Add keys when they are pressed and remove when they are released
 (def player1-keys-collection (atom []))
-(def player2-keys-collection (atom []))
+(def player2-keys-collection (atom {:right :off}))
 
-;; When keys is pressed add it to this list. While the key is in the list
-;; move the player accordingly. When key is released remove it from the list.
-;; When the key it is no longer in the list the player will not be moved
 
 (defn move-player1-up []
   (swap! player1-coordinates update-in [:y] - 7))
@@ -35,14 +33,17 @@
 (defn move-player2-down []
   (swap! player2-coordinates update-in [:y] + 7))
 
-(defn players-movement
-  "Checking which key is pressed and calling corresponding function"
-  [key]
+
+(defn players-movement [key]
   (cond
-    (= key :right) (move-player2-up)
-    (= key :left) (move-player2-down)
-    (= key :d) (move-player1-down)
-    (= key :a) (move-player1-up)))
+    (= key :right) (async/go
+                     (println "Vienas")
+                     (swap! player2-keys-collection assoc :right :on)
+                     (println @player2-keys-collection)
+                     (while (= (get @player2-keys-collection :right) :on) (println "belenkas")))
+    (= key :left) (do
+                    (swap! @player2-keys-collection conj :left)
+                    (while (contains? @player2-keys-collection :left) move-player2-down))))
 
 (defn key-pressed
   "Function is activated when a key is pressed"
@@ -50,10 +51,15 @@
   (when (quil/key-pressed?)
     (players-movement (quil/key-as-keyword))))
 
-(defn key-released
-  "Function is activated when a key is released"
-  []
-  (println (str "Released: " (quil/raw-key))))
+(defn key-released []
+  (do
+    (println "Collection contains")
+    (println @player2-keys-collection)
+    (println (str "Released:" (quil/key-as-keyword)))
+    (swap! player2-keys-collection assoc :right :off)
+    (println "After release collection contains")
+    (println @player2-keys-collection)))
+
 
 (defn draw []
   (quil/background 11)
@@ -68,4 +74,20 @@
                 :draw (fn [] (draw))
                 :key-pressed key-pressed
                 :key-released key-released)
+
+#_
+    (defn key-released
+      "Function is activated when a key is released"
+      []
+      (println (str "Released: " (quil/raw-key))))
+
+#_
+    (defn players-movement
+      "Checking which key is pressed and calling corresponding function"
+      [key]
+      (cond
+        (= key :right) (move-player2-up)
+        (= key :left) (move-player2-down)
+        (= key :d) (move-player1-down)
+        (= key :a) (move-player1-up)))
   
