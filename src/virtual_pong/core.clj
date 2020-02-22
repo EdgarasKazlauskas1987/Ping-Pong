@@ -1,5 +1,6 @@
 (ns virtual-pong.core
   (:gen-class)
+  (:import [java.awt.event ActionListener KeyListener KeyEvent])
   (:require [quil.core :as quil])
   (:require [clojure.core.async :as async]))
 
@@ -16,10 +17,8 @@
 (def player1-coordinates (atom {:y 0}))
 (def player2-coordinates (atom {:y 0}))
 
-;; Add keys when they are pressed and remove when they are released
 (def player1-keys-collection (atom []))
 (def player2-keys-collection (atom {:right :off}))
-
 
 (defn move-player1-up []
   (swap! player1-coordinates update-in [:y] - 7))
@@ -33,17 +32,20 @@
 (defn move-player2-down []
   (swap! player2-coordinates update-in [:y] + 7))
 
-
+#_
 (defn players-movement [key]
   (cond
-    (= key :right) (async/go
+    (= key :right) (do
                      (println "Vienas")
                      (swap! player2-keys-collection assoc :right :on)
                      (println @player2-keys-collection)
-                     (while (= (get @player2-keys-collection :right) :on) (println "belenkas")))
-    (= key :left) (do
-                    (swap! @player2-keys-collection conj :left)
-                    (while (contains? @player2-keys-collection :left) move-player2-down))))
+                     (while (= (get @player2-keys-collection :right) :on) (println "belenkas")))))
+
+(defn players-movement [key]
+  (cond
+    (= key :right) (do
+                     (swap! player2-keys-collection assoc :right :on)
+                     (Thread. (while (= (get @player2-keys-collection :right) :on) (println "belenkas"))))))
 
 (defn key-pressed
   "Function is activated when a key is pressed"
@@ -59,7 +61,6 @@
     (swap! player2-keys-collection assoc :right :off)
     (println "After release collection contains")
     (println @player2-keys-collection)))
-
 
 (defn draw []
   (quil/background 11)
