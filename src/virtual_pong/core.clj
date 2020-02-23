@@ -45,7 +45,7 @@
   (cond
     (= key :right) (do
                      (swap! player2-keys-collection assoc :right :on)
-                     (Thread. (while (= (get @player2-keys-collection :right) :on) (println "belenkas"))))))
+                     (if (= (get @player2-keys-collection :right) :on) (println "belenkas")))))
 
 (defn key-pressed
   "Function is activated when a key is pressed"
